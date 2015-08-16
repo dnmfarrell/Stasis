@@ -1,6 +1,6 @@
 =head1 NAME
 
-stasis - an encrypting archive tool using tar and gpg
+stasis - an encrypting archive tool using tar, gpg and perl
 
 =head1 SYNOPSIS
 
@@ -9,19 +9,41 @@ stasis - an encrypting archive tool using tar and gpg
   Options:
 
       --destination -d  destination directory to save the encrypted archive to
-      --files       -f  filepath to a text file containing every file to backup
+      --files       -f  filepath to a text file of filepaths to backup
+      --ignore      -i  filepath to a text file of glob patterns to ignore
       --limit       -l  limit number of stasis backups to keep in destination directory (optional)
       --referrer    -r  referrer key name in gpg, usually an email address
       --temp        -t  temp filepath, optional argument to keep temp archive (removed on success)
-      --verbose     -v verbose, print progress statements
+      --verbose     -v  verbose, print progress statements
 
 =head2 Examples
 
 Save all the files listed in C<files_to_backup.txt> (one per line) to Dropbox:
 
   $ stasis --destination ~/Dropbox --files files_to_backup.txt --referrer mygpgkey@email.com
+  $ stasis -d ~/Dropbox -f files_to_backup.txt -r mygpgkey@email.com
 
-File patterns in C<.stasisignore> are ignored from backed up directories.
+Ignore the files matching patterns in C<.stasisignore>
+
+  $ stasis -d ~/Dropbox -f files_to_backup.txt -r mygpgkey@email.com -i .stasisignore
+
+Verbose mode
+
+  $ stasis -d ~/Dropbox -f files_to_backup.txt -r mygpgkey@email.com -v
+
+=head1 REQUIREMENTS/DEPENDENCIES
+
+=over 4
+
+=item * GnuPG
+
+=item * GNU tar
+
+=item * Perl
+
+=back
+
+C<stasis> has been tested on Linux with GNU tar v 1.28, GnuPG v1.4.19 and Perl 5.20.2. It should work on many earlier versions too.
 
 =head1 BUGS/LIMITATIONS
 

@@ -10,6 +10,7 @@ my $start_time = localtime;
 GetOptions(
   'destination=s' => \ my $destination,
   'files=s'       => \ my $file_list,
+  'ignore=s'      => \ my $ignore,
   'limit=i'       => \ my $limit,
   'referrer=s'    => \ my $referrer,
   'temp=s'        => \(my $tmp = '/tmp'),
@@ -19,6 +20,7 @@ GetOptions(
 
 die pod2usage(2) unless $destination && $file_list && $referrer;
 
+# validate mandatory args
 die "--temp $tmp does not exist\n" unless -e $tmp;
 die "--destination $destination does not exist\n" unless -e $destination;
 die "--files $file_list does not exist\n" unless -e $file_list;
@@ -28,7 +30,7 @@ my $tmp_destination = join('/', $tmp, $archive_name);
 my $final_destination = join('/', $destination, $archive_name);
 
 # read file list
-print "Stasis backup started on $start_time\nReading $file_list\n";
+print "\nStasis backup started on $start_time\nReading $file_list\n";
 open my $files, '<', $file_list or die $!;
 my @files;
 while (<$files>)
@@ -36,10 +38,10 @@ while (<$files>)
   chomp;
   push @files, $_;
 }
-printf "Found %s files to backup\n", scalar @files;
+printf "Found %s files/directories to archive\n", scalar @files;
 
 # compress
-my $rv = compress($tmp_destination, \@files, $verbose);
+my $rv = compress($tmp_destination, \@files, $ignore, $verbose);
 die "Failed to compress files to $tmp_destination $?\n" unless $rv == 0;
 
 # encrypt
@@ -56,12 +58,13 @@ printf "Archiving complete, runtime: %u secs\n", $end_time - $start_time;
 
 sub compress
 {
-  my ($destination, $files, $verbose) = @_;
+  my ($destination, $files, $ignore, $verbose) = @_;
   my $args = $verbose ? 'cvzf' : 'czf';
+  my $ignore_text = $ignore ? "-X $ignore" : "";
   my $file_list = join(' ', @$files);
 
   print "Compressing files:\n";
-  system("tar $args $destination -X .stasisignore $file_list");
+  system("tar $args $destination $ignore_text $file_list");
 }
 
 sub gen_archive_name
@@ -110,7 +113,7 @@ sub clean
 
 =head1 NAME
 
-stasis - an encrypting archive tool using tar and gpg
+stasis - an encrypting archive tool using tar, gpg and perl
 
 =head1 SYNOPSIS
 
@@ -119,17 +122,41 @@ stasis - an encrypting archive tool using tar and gpg
   Options:
 
       --destination -d  destination directory to save the encrypted archive to
-      --files       -f  filepath to a text file containing every file to backup
+      --files       -f  filepath to a text file of filepaths to backup
+      --ignore      -i  filepath to a text file of glob patterns to ignore
       --limit       -l  limit number of stasis backups to keep in destination directory (optional)
       --referrer    -r  referrer key name in gpg, usually an email address
       --temp        -t  temp filepath, optional argument to keep temp archive (removed on success)
-      --verbose     -v verbose, print progress statements
+      --verbose     -v  verbose, print progress statements
 
 =head2 Examples
 
 Save all the files listed in C<files_to_backup.txt> (one per line) to Dropbox:
 
   $ stasis --destination ~/Dropbox --files files_to_backup.txt --referrer mygpgkey@email.com
+  $ stasis -d ~/Dropbox -f files_to_backup.txt -r mygpgkey@email.com
+
+Ignore the files matching patterns in C<.stasisignore>
+
+  $ stasis -d ~/Dropbox -f files_to_backup.txt -r mygpgkey@email.com -i .stasisignore
+
+Verbose mode
+
+  $ stasis -d ~/Dropbox -f files_to_backup.txt -r mygpgkey@email.com -v
+
+=head1 REQUIREMENTS/DEPENDENCIES
+
+=over 4
+
+=item * GnuPG
+
+=item * GNU tar
+
+=item * Perl
+
+=back
+
+C<stasis> has been tested on Linux with GNU tar v 1.28, GnuPG v1.4.19 and Perl 5.20.2. It should work on many earlier versions too.
 
 =head1 BUGS/LIMITATIONS
 
