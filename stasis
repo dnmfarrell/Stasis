@@ -124,8 +124,7 @@ sub clean
     print "Deleting @sorted_backups\n" if $verbose && @sorted_backups;
     unlink @sorted_backups;
   }
-
-  system("rm $tmp_file");
+  unlink $tmp_file;
 }
 
 =head1 NAME
