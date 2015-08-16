@@ -1,0 +1,36 @@
+=head1 NAME
+
+stasis - an encrypting archive tool using tar and pgp
+
+=head1 SYNOPSIS
+
+  stasis [options]
+
+  Options:
+
+      --destination -d  destination directory to save the encrypted archive to
+      --files       -f  filepath to a text file containing every file to backup
+      --limit       -l  limit number of stasis backups to keep in destination directory (optional)
+      --referrer    -r  referrer key name in gpg, usually an email address
+      --temp        -t  temp filepath, optional argument to keep temp archive (removed on success)
+      --verbose     -v verbose, print progress statements
+
+=head2 Examples
+
+Save all the files listed in C<files_to_backup.txt> (one per line) to Dropbox:
+
+  $ stasis --destination ~/Dropbox --files files_to_backup.txt --referrer mygpgkey@email.com
+
+=head1 BUGS/LIMITATIONS
+
+If C<--files> contains the temp or destination location in it, it will create an infinite loop.
+
+=head1 AUTHOR
+
+David Farrell (C) 2015
+
+=head1 LICENSE
+
+FreeBSD (2 clause BSD license)
+
+=cut

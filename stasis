@@ -1,0 +1,140 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use Time::Piece;
+use Getopt::Long 'GetOptions';
+use Pod::Usage 'pod2usage';
+
+GetOptions(
+  'destination=s' => \ my $destination,
+  'files=s'       => \ my $file_list,
+  'limit=i'       => \ my $limit,
+  'referrer=s'    => \ my $referrer,
+  'temp=s'        => \(my $tmp = '/tmp'),
+  'verbose'       => \ my $verbose,
+  'help|?'        =>   sub { pod2usage(2) },
+);
+
+die pod2usage(2) unless $destination && $file_list && $referrer;
+
+die "--temp $tmp does not exist\n" unless -e $tmp;
+die "--destination $destination does not exist\n" unless -e $destination;
+die "--files $file_list does not exist\n" unless -e $file_list;
+
+my $archive_name = gen_archive_name();
+my $tmp_destination = join('/', $tmp, $archive_name);
+my $final_destination = join('/', $destination, $archive_name);
+
+# read file list
+print "Readiing $file_list\n";
+open my $files, '<', $file_list or die $!;
+my @files;
+while (<$files>)
+{
+  chomp;
+  push @files, $_;
+}
+printf "Found %s files to backup\n", scalar @files;
+
+# compress
+my $rv = compress($tmp_destination, \@files, $verbose);
+die "Failed to compress files to $tmp_destination $?\n" unless $rv == 0;
+
+# encrypt
+$rv = encrypt($tmp_destination, $referrer, $final_destination, $verbose);
+die "Failed to encrypt $tmp_destination $?\n" unless $rv == 0;
+
+# clean
+$rv = clean($tmp_destination, $destination, $limit, $verbose);
+die "Failed to clean $tmp_destination $?\n" unless $rv == 0;
+
+sub compress
+{
+  my ($destination, $files, $verbose) = @_;
+  my $args = $verbose ? 'cvzf' : 'czf';
+  my $file_list = join(' ', @$files);
+
+  print "Compressing files:\n";
+  system("tar $args $destination $file_list");
+}
+
+sub gen_archive_name
+{
+  my $dt = localtime;
+  return 'stasis-' . $dt->datetime . '.tar.gz.gpg';
+}
+
+sub encrypt
+{
+  my ($source, $referrer, $destination) = @_;
+  print "Encrypting archive\n";
+  system("gpg -e -o $destination -r $referrer $source");
+}
+
+sub clean
+{
+  my ($tmp_file, $destination, $limit, $verbose) = @_;
+
+  print "Cleaning files\n";
+
+  if (defined $limit)
+  {
+    # always keep the latest backup
+    $limit = 1 if $limit == 0;
+
+    print "Cleaning backups, limit $limit\n" if $verbose;
+    my @backups = ();
+    opendir my $dir, $destination or die "Can't open $destination $!\n";
+
+    while (readdir $dir)
+    {
+      push @backups, "$destination/$_"
+        if /^stasis-\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.tar\.gz\.gpg$/;
+    }
+    my @sorted_backups = sort { $b cmp $a } @backups;
+    my @keep_me = splice(@sorted_backups, 0, $limit);
+
+    # delete remaining backups
+    print "Deleting @sorted_backups\n" if $verbose;
+    unlink @sorted_backups;
+  }
+
+  system("rm $tmp_file");
+}
+
+=head1 NAME
+
+stasis - an encrypting archive tool using tar and pgp
+
+=head1 SYNOPSIS
+
+  stasis [options]
+
+  Options:
+
+      --destination -d  destination directory to save the encrypted archive to
+      --files       -f  filepath to a text file containing every file to backup
+      --limit       -l  limit number of stasis backups to keep in destination directory (optional)
+      --referrer    -r  referrer key name in gpg, usually an email address
+      --temp        -t  temp filepath, optional argument to keep temp archive (removed on success)
+      --verbose     -v verbose, print progress statements
+
+=head2 Examples
+
+Save all the files listed in C<files_to_backup.txt> (one per line) to Dropbox:
+
+  $ stasis --destination ~/Dropbox --files files_to_backup.txt --referrer mygpgkey@email.com
+
+=head1 BUGS/LIMITATIONS
+
+If C<--files> contains the temp or destination location in it, it will create an infinite loop.
+
+=head1 AUTHOR
+
+David Farrell (C) 2015
+
+=head1 LICENSE
+
+FreeBSD (2 clause BSD license)
+
+=cut
