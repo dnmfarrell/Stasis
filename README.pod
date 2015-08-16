@@ -1,6 +1,6 @@
 =head1 NAME
 
-stasis - an encrypting archive tool using tar and pgp
+stasis - an encrypting archive tool using tar and gpg
 
 =head1 SYNOPSIS
 
@@ -20,6 +20,8 @@ stasis - an encrypting archive tool using tar and pgp
 Save all the files listed in C<files_to_backup.txt> (one per line) to Dropbox:
 
   $ stasis --destination ~/Dropbox --files files_to_backup.txt --referrer mygpgkey@email.com
+
+File patterns in C<.stasisignore> are ignored from backed up directories.
 
 =head1 BUGS/LIMITATIONS
 

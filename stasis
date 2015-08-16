@@ -5,6 +5,8 @@ use Time::Piece;
 use Getopt::Long 'GetOptions';
 use Pod::Usage 'pod2usage';
 
+my $start_time = localtime;
+
 GetOptions(
   'destination=s' => \ my $destination,
   'files=s'       => \ my $file_list,
@@ -26,7 +28,7 @@ my $tmp_destination = join('/', $tmp, $archive_name);
 my $final_destination = join('/', $destination, $archive_name);
 
 # read file list
-print "Readiing $file_list\n";
+print "Stasis backup started on $start_time\nReading $file_list\n";
 open my $files, '<', $file_list or die $!;
 my @files;
 while (<$files>)
@@ -48,6 +50,10 @@ die "Failed to encrypt $tmp_destination $?\n" unless $rv == 0;
 $rv = clean($tmp_destination, $destination, $limit, $verbose);
 die "Failed to clean $tmp_destination $?\n" unless $rv == 0;
 
+my $end_time = localtime;
+
+printf "Archiving complete, runtime: %u secs\n", $end_time - $start_time;
+
 sub compress
 {
   my ($destination, $files, $verbose) = @_;
@@ -55,7 +61,7 @@ sub compress
   my $file_list = join(' ', @$files);
 
   print "Compressing files:\n";
-  system("tar $args $destination $file_list");
+  system("tar $args $destination -X .stasisignore $file_list");
 }
 
 sub gen_archive_name
@@ -95,7 +101,7 @@ sub clean
     my @keep_me = splice(@sorted_backups, 0, $limit);
 
     # delete remaining backups
-    print "Deleting @sorted_backups\n" if $verbose;
+    print "Deleting @sorted_backups\n" if $verbose && @sorted_backups;
     unlink @sorted_backups;
   }
 
@@ -104,7 +110,7 @@ sub clean
 
 =head1 NAME
 
-stasis - an encrypting archive tool using tar and pgp
+stasis - an encrypting archive tool using tar and gpg
 
 =head1 SYNOPSIS
 
