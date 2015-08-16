@@ -12,20 +12,31 @@ stasis - an encrypting archive tool using tar, gpg and perl
       --files       -f  filepath to a text file of filepaths to backup
       --ignore      -i  filepath to a text file of glob patterns to ignore
       --limit       -l  limit number of stasis backups to keep in destination directory (optional)
-      --referrer    -r  referrer key name in gpg, usually an email address
+      --passphrase      passphrase to use
+      --passfile        filepath to a textfile containing the password to use
+      --referrer    -r  name of the gpg key to use (instead of a passphrase or passfile)
       --temp        -t  temp filepath, optional argument to keep temp archive (removed on success)
       --verbose     -v  verbose, print progress statements
+      --help        -h  print this documentation
 
 =head2 Examples
 
 Save all the files listed in C<files_to_backup.txt> (one per line) to Dropbox:
 
-  $ stasis --destination ~/Dropbox --files files_to_backup.txt --referrer mygpgkey@email.com
-  $ stasis -d ~/Dropbox -f files_to_backup.txt -r mygpgkey@email.com
+  $ stasis --destination ~/Dropbox --files files_to_backup.txt --passphrase mysecretkey
+  $ stasis -d ~/Dropbox -f files_to_backup.txt --passphrase mysecretkey
+
+Use passfile instead of passphrase
+
+  $ stasis -d ~/Dropbox -f files_to_backup.txt --passfile /path/to/passfile
+
+Use referrer GPG key to encrypt
+
+  $ stasis -d ~/Dropbox -f files_to_backup.txt -r keyname@example.com
 
 Ignore the files matching patterns in C<.stasisignore>
 
-  $ stasis -d ~/Dropbox -f files_to_backup.txt -r mygpgkey@email.com -i .stasisignore
+  $ stasis -d ~/Dropbox -f files_to_backup.txt -r keyname@example.com -i .stasisignore
 
 Verbose mode
 
@@ -47,7 +58,10 @@ C<stasis> has been tested on Linux with GNU tar v 1.28, GnuPG v1.4.19 and Perl 5
 
 =head1 BUGS/LIMITATIONS
 
-If C<--files> contains the temp or destination location in it, it will create an infinite loop.
+If C<--files> contains the temp or destination location in it, C<tar> will create an infinite loop.
+
+When a passphrase or file is provided, symmetric GPG encryption is done using AES256 cipher algorithm. At the time of development
+this is considered secure, but only as strong as the passphrase used to encrypt the data.
 
 =head1 AUTHOR
 
