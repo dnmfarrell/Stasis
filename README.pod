@@ -15,7 +15,7 @@ stasis - an encrypting archive tool using tar, gpg and perl
       --passphrase      passphrase to use
       --passfile        filepath to a textfile containing the password to use
       --referrer    -r  name of the gpg key to use (instead of a passphrase or passfile)
-      --temp        -t  temp filepath, optional argument to keep temp archive (removed on success)
+      --temp        -t  temp directory path, uses /tmp by default
       --verbose     -v  verbose, print progress statements
       --help        -h  print this documentation
 
