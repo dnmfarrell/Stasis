@@ -89,11 +89,11 @@ sub encrypt
       ? "--passphrase $passphrase"
       : "--passphrase-file $passfile";
 
-    system("gpg -c -o $final_destination --cipher-algo AES256 $pass_arg $source");
+    system("gpg --no-tty -c -o $final_destination --cipher-algo AES256 $pass_arg $source");
   }
   else
   {
-    system("gpg -e -o $final_destination -R $referrer $source");
+    system("gpg --no-tty -e -o $final_destination -R $referrer $source");
   }
 }
 
