@@ -3,6 +3,7 @@ use autodie;
 use strict;
 use warnings;
 use Time::Piece;
+use Time::Seconds;
 use Getopt::Long 'GetOptions';
 use Pod::Usage 'pod2usage';
 
@@ -12,16 +13,17 @@ GetOptions(
   'destination=s' => \ my $destination,
   'files=s'       => \ my $file_list,
   'ignore=s'      => \ my $ignore,
+  'days=i'        => \ (my $days = 0),
   'limit=i'       => \ my $limit,
   'passphrase=s'  => \ my $passphrase,
   'passfile=s'    => \ my $passfile,
   'referrer=s'    => \ my $referrer,
   'temp=s'        => \(my $tmp = '/tmp'),
   'verbose'       => \ my $verbose,
-  'help|?'        =>   sub { pod2usage(2) },
+  'help|?'        =>   sub { pod2usage(1) },
 );
 
-die pod2usage(2) unless $destination 
+die pod2usage() unless $destination
   && $file_list
   && ($passphrase || $passfile || $referrer);
 
@@ -30,6 +32,13 @@ die "--temp $tmp does not exist\n" unless -e $tmp;
 die "--destination $destination does not exist\n" unless -e $destination;
 die "--files $file_list does not exist\n" unless -e $file_list;
 die "--passfile $passfile does not exist\n" if $passfile && ! -e $passfile;
+
+# check if a backup already exists within x days
+unless (need_backup())
+{
+  print "A backup already exists within $days\n";
+  exit 0;
+}
 
 my $archive_name = gen_archive_name();
 my $tmp_destination = join('/', $tmp, $archive_name);
@@ -111,7 +120,7 @@ sub clean
 
     print "Cleaning backups, limit $limit\n" if $verbose;
     my @backups = ();
-    opendir my $dir, $destination or die "Can't open $destination $!\n";
+    opendir(my $dir, $destination);
 
     while (readdir $dir)
     {
@@ -128,6 +137,19 @@ sub clean
   unlink $tmp_file;
 }
 
+sub need_backup
+{
+  my $backup_horizon = $start_time - ONE_DAY * $days;
+  opendir(my $dir, $destination);
+  while (readdir $dir)
+  {
+    next unless /^stasis-.+?\.gpg$/;
+    my @stat = stat "$destination/$_";
+    return 0 if $stat[10] > $backup_horizon->epoch;
+  }
+  return 1;
+}
+
 =head1 NAME
 
 stasis - an encrypting archive tool using tar, gpg and perl
@@ -138,39 +160,50 @@ stasis - an encrypting archive tool using tar, gpg and perl
 
   Options:
 
-      --destination -d  destination directory to save the encrypted archive to
+      --destination -de destination directory to save the encrypted archive to
+      --days        -da only create an archive if one doesn't exist within this many days (optional)
       --files       -f  filepath to a text file of filepaths to backup
-      --ignore      -i  filepath to a text file of glob patterns to ignore
+      --ignore      -i  filepath to a text file of glob patterns to ignore (optional)
       --limit       -l  limit number of stasis backups to keep in destination directory (optional)
       --passphrase      passphrase to use
       --passfile        filepath to a textfile containing the password to use
       --referrer    -r  name of the gpg key to use (instead of a passphrase or passfile)
       --temp        -t  temp directory path, uses /tmp by default
-      --verbose     -v  verbose, print progress statements
-      --help        -h  print this documentation
+      --verbose     -v  verbose, print progress statements (optional)
+      --help        -h  print this documentation (optional)
+
+=head1 OPTIONS
 
 =head2 Examples
 
 Save all the files listed in C<files_to_backup.txt> (one per line) to Dropbox:
 
   $ ./stasis --destination ~/Dropbox --files files_to_backup.txt --passphrase mysecretkey
-  $ ./stasis -d ~/Dropbox -f files_to_backup.txt --passphrase mysecretkey
+  $ ./stasis -de ~/Dropbox -f files_to_backup.txt --passphrase mysecretkey
 
 Use passfile instead of passphrase
 
-  $ ./stasis -d ~/Dropbox -f files_to_backup.txt --passfile /path/to/passfile
+  $ ./stasis -de ~/Dropbox -f files_to_backup.txt --passfile /path/to/passfile
 
 Use referrer GPG key to encrypt
 
-  $ ./stasis -d ~/Dropbox -f files_to_backup.txt -r keyname@example.com
+  $ ./stasis -de ~/Dropbox -f files_to_backup.txt -r keyname@example.com
 
 Ignore the files matching patterns in C<.stasisignore>
 
-  $ ./stasis -d ~/Dropbox -f files_to_backup.txt -r keyname@example.com -i .stasisignore
+  $ ./stasis -de ~/Dropbox -f files_to_backup.txt -r keyname@example.com -i .stasisignore
 
 Verbose mode
 
-  $ ./stasis -d ~/Dropbox -f files_to_backup.txt -r mygpgkey@email.com -v
+  $ ./stasis -de ~/Dropbox -f files_to_backup.txt -r mygpgkey@email.com -v
+
+Only keep the last 4 backups
+
+  $ ./stasis -de ~/Dropbox -f files_to_backup.txt --passphrase mysecretkey -l 4
+
+Only make weekly backups
+
+  $ ./stasis -de ~/Dropbox -f files_to_backup.txt --passphrase mysecretkey --days 7
 
 =head1 REQUIREMENTS/DEPENDENCIES
 
@@ -200,5 +233,9 @@ David Farrell (C) 2015
 =head1 LICENSE
 
 FreeBSD (2 clause BSD license)
+
+=head1 VERSION
+
+0.02
 
 =cut

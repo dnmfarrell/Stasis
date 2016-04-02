@@ -8,39 +8,50 @@ stasis - an encrypting archive tool using tar, gpg and perl
 
   Options:
 
-      --destination -d  destination directory to save the encrypted archive to
+      --destination -de destination directory to save the encrypted archive to
+      --days        -da only create an archive if one doesn't exist within this many days (optional)
       --files       -f  filepath to a text file of filepaths to backup
-      --ignore      -i  filepath to a text file of glob patterns to ignore
+      --ignore      -i  filepath to a text file of glob patterns to ignore (optional)
       --limit       -l  limit number of stasis backups to keep in destination directory (optional)
       --passphrase      passphrase to use
       --passfile        filepath to a textfile containing the password to use
       --referrer    -r  name of the gpg key to use (instead of a passphrase or passfile)
       --temp        -t  temp directory path, uses /tmp by default
-      --verbose     -v  verbose, print progress statements
-      --help        -h  print this documentation
+      --verbose     -v  verbose, print progress statements (optional)
+      --help        -h  print this documentation (optional)
+
+=head1 OPTIONS
 
 =head2 Examples
 
 Save all the files listed in C<files_to_backup.txt> (one per line) to Dropbox:
 
-  $ stasis --destination ~/Dropbox --files files_to_backup.txt --passphrase mysecretkey
-  $ stasis -d ~/Dropbox -f files_to_backup.txt --passphrase mysecretkey
+  $ ./stasis --destination ~/Dropbox --files files_to_backup.txt --passphrase mysecretkey
+  $ ./stasis -de ~/Dropbox -f files_to_backup.txt --passphrase mysecretkey
 
 Use passfile instead of passphrase
 
-  $ stasis -d ~/Dropbox -f files_to_backup.txt --passfile /path/to/passfile
+  $ ./stasis -de ~/Dropbox -f files_to_backup.txt --passfile /path/to/passfile
 
 Use referrer GPG key to encrypt
 
-  $ stasis -d ~/Dropbox -f files_to_backup.txt -r keyname@example.com
+  $ ./stasis -de ~/Dropbox -f files_to_backup.txt -r keyname@example.com
 
 Ignore the files matching patterns in C<.stasisignore>
 
-  $ stasis -d ~/Dropbox -f files_to_backup.txt -r keyname@example.com -i .stasisignore
+  $ ./stasis -de ~/Dropbox -f files_to_backup.txt -r keyname@example.com -i .stasisignore
 
 Verbose mode
 
-  $ stasis -d ~/Dropbox -f files_to_backup.txt -r mygpgkey@email.com -v
+  $ ./stasis -de ~/Dropbox -f files_to_backup.txt -r mygpgkey@email.com -v
+
+Only keep the last 4 backups
+
+  $ ./stasis -de ~/Dropbox -f files_to_backup.txt --passphrase mysecretkey -l 4
+
+Only make weekly backups
+
+  $ ./stasis -de ~/Dropbox -f files_to_backup.txt --passphrase mysecretkey --days 7
 
 =head1 REQUIREMENTS/DEPENDENCIES
 
@@ -70,5 +81,9 @@ David Farrell (C) 2015
 =head1 LICENSE
 
 FreeBSD (2 clause BSD license)
+
+=head1 VERSION
+
+0.02
 
 =cut
