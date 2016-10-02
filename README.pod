@@ -74,16 +74,28 @@ If C<--files> contains the temp or destination location in it, C<tar> will creat
 When a passphrase or file is provided, symmetric GPG encryption is done using AES256 cipher algorithm. At the time of development
 this is considered secure, but only as strong as the passphrase used to encrypt the data.
 
+=head1 INSTALLATION
+
+  $ cpan Stasis
+
+Or
+
+  $ git clone https://github.com/dnmfarrell/Stasis
+  $ cd Stasis
+  $ perl Makefile.PL
+  $ make
+  $ make install
+
+=head1 REPOSITORY
+
+L<https://github.com/dnmfarrell/Stasis>
+
 =head1 AUTHOR
 
-David Farrell (C) 2015
+David Farrell E<copy> 2015
 
 =head1 LICENSE
 
 FreeBSD (2 clause BSD license)
-
-=head1 VERSION
-
-0.02
 
 =cut
