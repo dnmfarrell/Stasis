@@ -2,7 +2,7 @@ use 5.008005;
 use ExtUtils::MakeMaker;
 
 WriteMakefile(
-  NAME          => 'Stasis',
+  NAME          => 'stasis',
   VERSION_FROM  => 'stasis',
   ABSTRACT_FROM => 'stasis',
   AUTHOR        => 'David Farrell',

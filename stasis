@@ -1,4 +1,6 @@
 #!/usr/bin/env perl
+package stasis;
+package main;
 use autodie;
 use strict;
 use warnings;
@@ -7,7 +9,7 @@ use Time::Seconds;
 use Getopt::Long 'GetOptions';
 use Pod::Usage 'pod2usage';
 
-our $VERSION = 0.03;
+our $VERSION = 0.04;
 
 my $start_time = localtime;
 
@@ -151,7 +153,8 @@ sub need_backup
   }
   return 1;
 }
-
+1;
+__END__
 =head1 NAME
 
 stasis - an encrypting archive tool using tar, gpg and perl
@@ -180,32 +183,32 @@ stasis - an encrypting archive tool using tar, gpg and perl
 
 Save all the files listed in C<files_to_backup.txt> (one per line) to Dropbox:
 
-  $ ./stasis --destination ~/Dropbox --files files_to_backup.txt --passphrase mysecretkey
-  $ ./stasis -de ~/Dropbox -f files_to_backup.txt --passphrase mysecretkey
+  $ stasis --destination ~/Dropbox --files files_to_backup.txt --passphrase mysecretkey
+  $ stasis -de ~/Dropbox -f files_to_backup.txt --passphrase mysecretkey
 
 Use passfile instead of passphrase
 
-  $ ./stasis -de ~/Dropbox -f files_to_backup.txt --passfile /path/to/passfile
+  $ stasis -de ~/Dropbox -f files_to_backup.txt --passfile /path/to/passfile
 
 Use referrer GPG key to encrypt
 
-  $ ./stasis -de ~/Dropbox -f files_to_backup.txt -r keyname@example.com
+  $ stasis -de ~/Dropbox -f files_to_backup.txt -r keyname@example.com
 
 Ignore the files matching patterns in C<.stasisignore>
 
-  $ ./stasis -de ~/Dropbox -f files_to_backup.txt -r keyname@example.com -i .stasisignore
+  $ stasis -de ~/Dropbox -f files_to_backup.txt -r keyname@example.com -i .stasisignore
 
 Verbose mode
 
-  $ ./stasis -de ~/Dropbox -f files_to_backup.txt -r mygpgkey@email.com -v
+  $ stasis -de ~/Dropbox -f files_to_backup.txt -r mygpgkey@email.com -v
 
 Only keep the last 4 backups
 
-  $ ./stasis -de ~/Dropbox -f files_to_backup.txt --passphrase mysecretkey -l 4
+  $ stasis -de ~/Dropbox -f files_to_backup.txt --passphrase mysecretkey -l 4
 
 Only make weekly backups
 
-  $ ./stasis -de ~/Dropbox -f files_to_backup.txt --passphrase mysecretkey --days 7
+  $ stasis -de ~/Dropbox -f files_to_backup.txt --passphrase mysecretkey --days 7
 
 =head1 REQUIREMENTS/DEPENDENCIES
 
