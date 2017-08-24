@@ -9,7 +9,7 @@ use Time::Seconds;
 use Getopt::Long 'GetOptions';
 use Pod::Usage 'pod2usage';
 
-our $VERSION = 0.05;
+our $VERSION = 0.06;
 
 my $start_time = localtime;
 
