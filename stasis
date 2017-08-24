@@ -89,7 +89,10 @@ sub compress
 sub gen_archive_name
 {
   my $dt = localtime;
-  return 'stasis-' . $dt->datetime . '.tar.gz.gpg';
+  my $name = 'stasis-' . $dt->datetime . '.tar.gz.gpg';
+  # replace fat32 illegal characters in timestamp
+  $name =~ s/:/_/g;
+  return $name;
 }
 
 sub encrypt
