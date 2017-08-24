@@ -151,7 +151,10 @@ sub need_backup
   {
     next unless /^stasis-.+?\.gpg$/;
     my @stat = stat "$destination/$_";
-    return 0 if $stat[10] > $backup_horizon->epoch;
+    my $backup_dt = Time::Piece->strptime($stat[9], '%s');
+    log_verbose("$destination/$_: $backup_dt");
+
+    return 0 if $backup_dt > $backup_horizon;
   }
   return 1;
 }
