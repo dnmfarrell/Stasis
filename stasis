@@ -9,6 +9,8 @@ use Time::Seconds;
 use Getopt::Long 'GetOptions';
 use Pod::Usage 'pod2usage';
 
+$SIG{INT} = $SIG{TERM} = sub { exit 1 };
+
 our $VERSION = 0.07;
 
 my $start_time = localtime;
@@ -141,7 +143,6 @@ sub clean
     log_verbose("Deleting @sorted_backups") if @sorted_backups;
     unlink @sorted_backups;
   }
-  unlink $tmp_file;
 }
 
 sub need_backup
@@ -165,6 +166,7 @@ sub need_backup
 sub log_msg { print STDERR join("\n", @_, '') }
 sub log_verbose { log_msg(@_) if $verbose }
 
+END { unlink $tmp_destination if $tmp_destination }
 1;
 __END__
 =head1 NAME
