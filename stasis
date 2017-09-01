@@ -62,7 +62,7 @@ while (<$files>)
 log_msg(sprintf "Found %s files/directories to archive", scalar @files);
 
 # compress
-my $rv = compress($tmp_destination, \@files, $ignore, $verbose);
+my $rv = compress($tmp_destination, \@files, $ignore);
 die "Failed to compress files to $tmp_destination $?\n" unless $rv == 0;
 
 # encrypt
@@ -70,8 +70,7 @@ $rv = encrypt($tmp_destination, $passphrase, $referrer, $passfile, $final_destin
 die "Failed to encrypt $tmp_destination $?\n" unless $rv == 0;
 
 # clean
-$rv = clean($tmp_destination, $destination, $limit, $verbose);
-die "Failed to clean $tmp_destination $?\n" unless $rv;
+clean($destination, $limit);
 
 my $end_time = localtime;
 
@@ -79,7 +78,7 @@ log_msg(sprintf "Archiving complete, runtime: %u secs", $end_time - $start_time)
 
 sub compress
 {
-  my ($destination, $files, $ignore, $verbose) = @_;
+  my ($destination, $files, $ignore) = @_;
   my $args = $verbose ? 'cvzf' : 'czf';
   my $ignore_text = $ignore ? "-X $ignore" : "";
   my $file_list = join(' ', @$files);
@@ -118,7 +117,7 @@ sub encrypt
 
 sub clean
 {
-  my ($tmp_file, $destination, $limit, $verbose) = @_;
+  my ($destination, $limit) = @_;
 
   log_msg("Cleaning files");
 
