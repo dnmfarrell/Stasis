@@ -133,7 +133,7 @@ sub clean
     while (readdir $dir)
     {
       push @backups, "$destination/$_"
-        if /^stasis-\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.tar\.gz\.gpg$/;
+        if /^stasis-\d\d\d\d-\d\d-\d\dT\d\d_\d\d_\d\d\.tar\.gz\.gpg$/;
     }
     my @sorted_backups = sort { $b cmp $a } @backups;
     my @keep_me = splice(@sorted_backups, 0, $limit);
