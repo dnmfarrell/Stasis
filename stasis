@@ -11,7 +11,7 @@ use Pod::Usage 'pod2usage';
 
 $SIG{INT} = $SIG{TERM} = sub { exit 1 };
 
-our $VERSION = 0.08;
+our $VERSION = 0.09;
 
 my $start_time = localtime;
 
@@ -107,11 +107,11 @@ sub encrypt
       ? "--passphrase $passphrase"
       : "--passphrase-file $passfile";
 
-    system("gpg --no-tty -c -o $final_destination --cipher-algo AES256 $pass_arg $source");
+    system("gpg --no-tty --pinentry-mode=loopback -c -o $final_destination --cipher-algo AES256 $pass_arg $source");
   }
   else
   {
-    system("gpg --no-tty -e -o $final_destination -R $referrer $source");
+    system("gpg --no-tty --pinentry-mode=loopback -e -o $final_destination -R $referrer $source");
   }
 }
 
