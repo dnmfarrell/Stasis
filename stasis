@@ -246,7 +246,7 @@ this is considered secure, but only as strong as the passphrase used to encrypt 
 
 =head1 INSTALLATION
 
-  $ cpan Stasis
+  $ cpan stasis
 
 Or
 
