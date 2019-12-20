@@ -11,7 +11,7 @@ use Pod::Usage 'pod2usage';
 
 $SIG{INT} = $SIG{TERM} = sub { exit 1 };
 
-our $VERSION = 0.09;
+our $VERSION = 0.10;
 
 my $start_time = localtime;
 
